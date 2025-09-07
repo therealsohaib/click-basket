@@ -5,6 +5,6 @@ class Order < ApplicationRecord
   has_many :products, through: :order_items
 
 
-  validates :total, numericality: { greater_than_or_equal_to: 0 }
+  validates :total_price, numericality: { greater_than_or_equal_to: 0 }
   validates :status, presence: true, inclusion: { in: %w(pending paid completed canceled) }
 end
