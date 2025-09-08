@@ -10,12 +10,30 @@ class OrdersController < ApplicationController
   end
 
   def create
-    @order = Order.new(order_params)
-    if @order.save
-      render json: @order, status: :created
-    else
-      render json: @order.errors, status: :unprocessable_entity
+    cart=Cart.find_by(user_id: order_params[:user_id])
+
+    if cart.nil? || cart.cart_items.empty?
+      return render json: {error: "Couldn't find cart with user_id #{order_params[:user_id]}"}
     end
+    order = Order.create!(
+    user_id: cart.user,
+    total_price: cart.cart_items.sum {|cart_item| cart_item.price * cart_item.quantity},
+    status: "pending"
+    )
+
+    cart.cart_items.each do |cart_item|
+      OrderItem.create!(
+        order: order,
+        product: cart_item.product,
+        quantity: cart_item.quantity,
+        price: cart_item.price,
+      )
+    end
+
+    cart.cart_items.destroy_all
+
+    render json: order, include: :order_items, status: :created
+
   end
 
   def update
@@ -31,7 +49,6 @@ class OrdersController < ApplicationController
     head :no_content
   end
 
-  # PATCH /orders/:id/cancel
   def cancel
     @order.update(status: "cancelled")
     render json: @order
@@ -43,6 +60,6 @@ class OrdersController < ApplicationController
   end
 
   def order_params
-    params.require(:order).permit(:user_id, :total_price, :status)
+    params.require(:order).permit(:user_id)
   end
 end
