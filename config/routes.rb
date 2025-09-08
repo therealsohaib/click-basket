@@ -20,4 +20,5 @@ Rails.application.routes.draw do
       patch :cancel
     end
   end
+  resources :order_items
 end
