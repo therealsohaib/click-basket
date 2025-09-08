@@ -1,5 +1,6 @@
 class Cart < ApplicationRecord
   belongs_to :user
+  has_many :cart_items, dependent: :destroy
 
   scope :for_product, ->(product_id) { where(product_id: product_id) }
   scope :for_cart, ->(cart_id) { where(cart_id: cart_id) }
