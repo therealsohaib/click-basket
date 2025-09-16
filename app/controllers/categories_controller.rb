@@ -1,8 +1,10 @@
 class CategoriesController < ApplicationController
   before_action :set_category, only: [:show, :update, :destroy]
   def index
-    @categories = Category.all
-    render json: @categories
+    categories=Rails.cache.fetch("categories_index", expires_in: 5.minute) do
+      Category.all.as_json(only: [:id, :name])
+    end
+    render json: categories
   end
   def show
     render json: @category, include: :products
