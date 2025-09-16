@@ -28,4 +28,14 @@
 #       enabled: "ON"
 
 en:
-  hello: "Hello world"
+  products:
+    created: "Product created successfully"
+    updated: "Product updated successfully"
+    deleted: "Product deleted successfully"
+
+  orders:
+    created: "Order %{id} created for %{user}"
+    cancelled: "Order %{id} has been cancelled"
+
+  users:
+    created: "Welcomoe %{name} for signup"
