@@ -6,9 +6,32 @@ class OrdersController < ApplicationController
   end
 
   def show
-    render json: @order, include: :order_items
-  end
+    order = Rails.cache.fetch(["order", @order, @order.updated_at]) do
+      {
+        id: @order.id,
+        status: @order.status,
+        total_price: @order.total_price,
+        items: @order.order_items.includes(:product).map do |item|
+          Rails.cache.fetch(["order_item", item, item.updated_at]) do
+            {
+              id: item.id,
+              quantity: item.quantity,
+              price: item.price,
+              product: Rails.cache.fetch(["product", item.product, item.product.updated_at]) do
+                {
+                  id: item.product.id,
+                  name: item.product.name,
+                  price: item.product.price
+                }
+              end
+            }
+          end
+        end
+      }
+    end
 
+    render json: order
+  end
   def create
 
     logger.debug ">>> Incoming params: #{params.inspect}"
