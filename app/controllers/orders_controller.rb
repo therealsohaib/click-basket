@@ -10,6 +10,9 @@ class OrdersController < ApplicationController
   end
 
   def create
+
+    logger.debug ">>> Incoming params: #{params.inspect}"
+
     cart=Cart.find_by(user_id: order_params[:user_id])
 
     if cart.nil? || cart.cart_items.empty?
@@ -32,7 +35,7 @@ class OrdersController < ApplicationController
 
     cart.cart_items.destroy_all
 
-    render json: order, include: :order_items, status: :created
+    render json: { message: I18n.t("orders.created") }, include: :order_items, status: :created
 
   end
 
@@ -51,7 +54,8 @@ class OrdersController < ApplicationController
 
   def cancel
     @order.update(status: "cancelled")
-    render json: @order
+    render json: {message: I18n.t("orders.cancelled", id: @order.id)}
+    destroy
   end
 
   private
