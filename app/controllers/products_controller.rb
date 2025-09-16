@@ -1,8 +1,28 @@
 class ProductsController < ApplicationController
   before_action :set_product, only: [:show,  :update, :destroy]
   def index
-  @products = Product.includes(:category).in_stock
-  render json: @products, include: :category
+    logger.debug ">>> Incoming params: #{params.inspect}"
+
+    @products = Product.includes(:category).in_stock
+
+    products=@products.map do |product|
+      Rails.cache.fetch(["product", product, product.updated_at]) do
+        {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          sku: product.sku,
+          description: product.description,
+          stock_quantity: product.stock_quantity,
+          category: {
+            id: product.category.id,
+            name: product.category.name
+          }
+        }
+      end
+    end
+
+  render json: products
   end
   def show
     render json: @product, include: :category
